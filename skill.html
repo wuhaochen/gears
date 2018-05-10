@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<form id="skill">
+  Account: <input type="text" id="account" name="account" value=""><br>
+  Skill queue end in:
+  <input type="text" id="remainday" name="day" value="0"> day(s)
+  <input type="text" id="remainhour" name="hour" value="0"> hour(s)
+  <input type="text" id="remainminute" name="minute" value="0"> minute(s)
+</form>
+
+<br>
+
+<button onclick="showEndTime()">Submit</button>
+
+<p id="endtime"></p>
+
+<a id="notifylink"></a>
+
+<script>
+function calcEndTime() {
+    var day = parseInt(document.getElementById("remainday").value);
+    var hour = parseInt(document.getElementById("remainhour").value);
+    var minute = parseInt(document.getElementById("remainminute").value);
+    var totalms = minute*60*1000 + hour*60*60*1000 + day*24*60*60*1000;
+    var current = new Date();
+    var queueEnd = new Date();
+    queueEnd.setTime(current.getTime() + totalms);
+    return queueEnd;
+}
+
+function calcNotifyTime() {
+    var queueEnd = calcEndTime();
+    var notifyTime = new Date(queueEnd)
+    var hour = queueEnd.getHours();
+    notifyTime.setHours(20,0,0,0);
+    if (hour < 23) { notifyTime.setDate(notifyTime.getDate()-1); }
+    return notifyTime
+}
+
+function showEndTime() {
+    var text = "Skill queue end in: " + calcEndTime() + "<br>" + "Notification will be set on: " + calcNotifyTime();
+    document.getElementById("endtime").innerHTML = text;
+    addNotificationToCalendar();
+}
+
+function addNotificationToCalendar() {
+    var title = 'Train new skill for ' + document.getElementById("account").value;
+    var notifyTime = calcNotifyTime();
+    var formatTime = function(date) {
+    return date.toISOString().replace(/-|:|\.\d+/g, '');
+  };
+    var href = encodeURI([
+      'https://www.google.com/calendar/render',
+      '?action=TEMPLATE',
+      '&text=' + title,
+      '&dates=' + formatTime(notifyTime),
+      '/' + formatTime(notifyTime)].join('')
+    );
+    document.getElementById("notifylink").href = href;
+    document.getElementById("notifylink").innerHTML = 'Add to calendar';
+}
+</script>
+
+</body>
+</html>
